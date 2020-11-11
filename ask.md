@@ -49,6 +49,25 @@ key ref
 
 #### hooks 使用的时候有什么注意事项？使用的时候可以怎么帮助团队正确使用hook
 
+### react原理
+
+#### 了解fiber吗，fiber的作用，为什么react需要引入fiber?
+
+#### 在react中使用jsx实现一个`Component`然后通过`ReactDom.render()`渲染出这个元素，这个中间都发生了什么？
+关键字： 
+
+jsx编译后通过createElement生成ReactElement，交给render
+
+render时 先通过 `Scheduler（调度器)` 分析渲染任务的优先级便将其加入到更新队列，然后`Reconciler（协调器）`会进行渲染前的处理包括虚拟dom的分析等最后交给Renderer处理， `Renderer（渲染器）`根据`Reconciler`处理后的标记进行dom操作，将元素渲染到页面上。
+
+#### fiber在上面说的哪一步中使用的？
+
+#### 函数式组件通过hook是怎么记住状态的？这个状态保存在哪里？
+
+useState的状态是已单向链表的形式保存在这个函数组件对应的fiber中的`memorizedState`中的。
+
+#### 为什么将hook使用if包裹起来会出现问题？
+
 #### 动态路由 import()
 
 webpack 中如何打包的？css 会自动拆分吗？
