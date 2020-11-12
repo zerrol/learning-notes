@@ -33,11 +33,32 @@ runtime 可以会改成局部，防止污染
 #### state.arr.push() 然后 setState({arr}) 页面会渲染吗？这样写会导致什么问题？
 页面会渲染，但是componentShouldUpdate会失效 
 
+
 #### SCU的默认返回值是什么, pureComponent 和 component 有什么区别
 pureComponent 实现了一个浅比较的componentShouldUpdate
 
+#### setState 的第二个参数是做什么？是异步还是同步？是宏任务还是微任务？
+
+setState是更新完成后的回调，在合成事件和生命周期中是异步的，在其他任务中是同步的
+当他是异步触发时，根据调度策略的不同，即可能是微任务也可能是宏任务
+
+#### setState 第二个参数和ComponentDidUpdate触发顺序？
+
+componentDidUpdate先触发
+
 #### React 组件不可传递的属性？
+
 key ref
+
+#### 父子组件和兄弟组件的渲染顺序
+
+父子组件的render顺序是：父组件先触发render，然后子组件触发
+
+兄弟组件的render顺序是：写在前面的组件先触发render
+
+父子组件的componentDidUpdate的顺序：子组件先didUpdate，然后是父组件
+
+兄弟组件的componentDidUpdate的顺序：Component组件先触发didUpdate, Component组件中按写的顺序触发；然后是Function组件触发，Function组件中按顺序触发
 
 #### key 有什么作用？（可一直深入到vdom和diff）
 
