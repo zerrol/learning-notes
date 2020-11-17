@@ -54,8 +54,9 @@ export function updateContainer(
   callback: ?Function,
 ): Lane {
   // 1. 更新时间
-  // lane 是 react 17 中新加入的，用来管理调度优先级的
+  // lane 是 react 17 中新加入的，用来管理调度的，代替了16中的expirationTime
   const current = container.current;
+  // eventTime 执行时间
   const eventTime = requestEventTime();
   const lane = requestUpdateLane(current);
   
@@ -65,24 +66,24 @@ export function updateContainer(
   const context = getContextForSubtree(parentComponent);
   container.context = context;
   
-  // 3. 创建一个更新 并，fiber.updateQueue.push()
+  // 3. 创建一个更新 并将这个update加入到fiber.updateQueue
   // createUpdate 返回一个 Update类型的对象
-  // origin: const update = createUpdate(eventTime, lane
 
-  // 3.1 创建更新
-  const update = {
-    // react 16中的
-    eventTime,
-    lane,
+  // 3.1 update = createUpdate() ==>>
+  // const update = {
+  //   // react 16中的
+  //   eventTime,
+  //   lane,
 
-    // 常量 标志位，UpdateState = 0
-    tag: UpdateState,
-    payload: null,
-    callback: null,
+  //   // 常量 标志位，UpdateState = 0
+  //   tag: UpdateState,
+  //   payload: null,
+  //   callback: null,
 
-    next: null,
-  };
+  //   next: null,
+  // };
 
+  const update = createUpdate(eventTime, lane)
   // Caution: React DevTools currently depends on this property
   // being called "element".
   // 当前更新的react元素
@@ -97,4 +98,86 @@ export function updateContainer(
   return lane
 }
 
+```
+
+#### scheduleUpdateOnFiber
+
+`ReactDOM.render`时核心的代码
+
+``` javascript
+function scheduleUpdateOnFiber(
+  fiber: Fiber,
+  // lane 是17中新引入的优先级处理的结构
+  lane: Lane,
+  eventTime: number,
+) {
+
+  // root = fiber.stateNode 是真实节点，对于RootFiber来说的话，指向的是FiberRoot
+  // 1.更新的Lane，并且返回FiberRoot
+  const root = markUpdateLaneFromFiberToRoot(fiber, lane);
+   
+    function markUpdateLaneFromFiberToRoot(
+      sourceFiber: Fiber,
+      lane: Lane,
+    ): FiberRoot | null {
+      // Update the source fiber's lanes
+      // 更新fiber的lanes
+      sourceFiber.lanes = mergeLanes(sourceFiber.lanes, lane);
+
+      // alternate 替补、互生； 顾名思义就是当前fiber节点的互生节点，react fiber使用了双缓存的结构
+      // 在react中最多会同时存在两颗fiber树，一个用于当前内容的显示称谓`current Fiber树`，另一个用于内存中正在构建的称谓`workInProgress Fiber树`
+      // 两棵`fiber树`的节点，互相对应，并且通过`alternate`属性进行连接。
+      let alternate = sourceFiber.alternate;
+      if (alternate !== null) {
+        alternate.lanes = mergeLanes(alternate.lanes, lane);
+      }
+
+      // Walk the parent path to the root and update the child expiration time.
+      // 递归更新所有子节点和祖先节点的lane
+      let node = sourceFiber;
+      let parent = sourceFiber.return;
+      while (parent !== null) {
+        parent.childLanes = mergeLanes(parent.childLanes, lane);
+        alternate = parent.alternate;
+        if (alternate !== null) {
+          alternate.childLanes = mergeLanes(alternate.childLanes, lane);
+        } else {
+          if (__DEV__) {
+            if ((parent.flags & (Placement | Hydrating)) !== NoFlags) {
+              warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber);
+            }
+          }
+        }
+        node = parent;
+        parent = parent.return;
+      }
+
+      if (node.tag === HostRoot) {
+        // stateNode => Fiber对应的真实DOM节点
+        const root: FiberRoot = node.stateNode;
+        return root;
+      } else {
+        return null;
+      }
+    }
+
+  // 标记root有待处理的更新
+  markRootUpdated(root, lane, eventTime);
+
+  // 获取优先级
+  const priorityLevel = getCurrentPriorityLevel()
+
+  // Register pending interactions on the root to avoid losing traced interaction data.
+  // 将交付数据注册到根节点，避免丢失数据
+  // 初次渲染时，不执行
+  schedulePendingInteractions(root, lane);
+
+  // This is a legacy edge case. The initial mount of a ReactDOM.render-ed
+  // root inside of batchedUpdates should be synchronous, but layout updates
+  // should be deferred until the end of the batch.
+  // 真正的渲染入口，开始渲染这个节点
+  performSyncWorkOnRoot(root);
+
+  mostRecentlyUpdatedRoot = root
+}
 ```
