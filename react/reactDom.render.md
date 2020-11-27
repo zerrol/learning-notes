@@ -120,10 +120,12 @@ function scheduleUpdateOnFiber(
       sourceFiber: Fiber,
       lane: Lane,
     ): FiberRoot | null {
+      // 1.1
       // Update the source fiber's lanes
       // 更新fiber的lanes
       sourceFiber.lanes = mergeLanes(sourceFiber.lanes, lane);
 
+      // 1.2
       // alternate 替补、互生； 顾名思义就是当前fiber节点的互生节点，react fiber使用了双缓存的结构
       // 在react中最多会同时存在两颗fiber树，一个用于当前内容的显示称谓`current Fiber树`，另一个用于内存中正在构建的称谓`workInProgress Fiber树`
       // 两棵`fiber树`的节点，互相对应，并且通过`alternate`属性进行连接。
@@ -132,6 +134,7 @@ function scheduleUpdateOnFiber(
         alternate.lanes = mergeLanes(alternate.lanes, lane);
       }
 
+      // 1.3
       // Walk the parent path to the root and update the child expiration time.
       // 递归更新所有子节点和祖先节点的lane
       let node = sourceFiber;
@@ -152,6 +155,7 @@ function scheduleUpdateOnFiber(
         parent = parent.return;
       }
 
+      // 1.4 返回stateNode，render时为FiberRoot
       if (node.tag === HostRoot) {
         // stateNode => Fiber对应的真实DOM节点
         const root: FiberRoot = node.stateNode;
@@ -161,23 +165,22 @@ function scheduleUpdateOnFiber(
       }
     }
 
-  // 标记root有待处理的更新
+  // 2. 标记root有待处理的更新
   markRootUpdated(root, lane, eventTime);
 
-  // 获取优先级
-  const priorityLevel = getCurrentPriorityLevel()
-
+  // 3. 将交付数据注册到根节点，避免丢失数据
   // Register pending interactions on the root to avoid losing traced interaction data.
-  // 将交付数据注册到根节点，避免丢失数据
   // 初次渲染时，不执行
   schedulePendingInteractions(root, lane);
 
+  // 4. 开始真正在渲染
   // This is a legacy edge case. The initial mount of a ReactDOM.render-ed
   // root inside of batchedUpdates should be synchronous, but layout updates
   // should be deferred until the end of the batch.
   // 真正的渲染入口，开始渲染这个节点
   performSyncWorkOnRoot(root);
 
+  // 5. 记录最近更新的节点
   mostRecentlyUpdatedRoot = root
 }
 ```
