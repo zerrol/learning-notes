@@ -184,3 +184,8 @@ function scheduleUpdateOnFiber(
   mostRecentlyUpdatedRoot = root
 }
 ```
+
+#### performSyncWorkOnRoot 
+同步执行
+
+// wo ye bu zhi dao nmi shuo he ns mkoiwew
