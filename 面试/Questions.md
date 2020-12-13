@@ -70,6 +70,10 @@ key ref
 
 #### hooks 使用的时候有什么注意事项？使用的时候可以怎么帮助团队正确使用hook
 
+#### hooks 的useEffect中怎么实现，Component组件 `ComponentDidUpdate` 中的 proProps?
+
+可以创建一个自定义的hook
+
 ### react原理
 
 #### 了解fiber吗，fiber的作用，为什么react需要引入fiber?
