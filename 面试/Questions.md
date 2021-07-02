@@ -17,18 +17,24 @@ webpack.DefinePlugin
 #### webpack babel-polyfill 有什么用
 
 #### 深入：webpackDevServer 热更新的原理是什么，怎么通知web进行更新的？
-
 websocket
 
 #### 深入 webpackDevServer proxy 的是怎么实现的？
-
 
 #### 深入 webpack babel-polyfill 和 runtime 有什么区别？
 
 polyfill 是全局修改使用的es6特性
 runtime 可以会改成局部，防止污染
 
+#### webpack按需加载的流程做了什么，怎么做到切换路由之后再加载对应js和css的。
+
+#### 输入一行命令会发生什么 
+
+#### yarn cdnadd react/react
+
 ### react
+
+#### 如何设计一个react-router keep-alive
 
 #### state.arr.push() 然后 setState({arr}) 页面会渲染吗？这样写会导致什么问题？
 页面会渲染，但是componentShouldUpdate会失效 
@@ -91,6 +97,8 @@ render时 先通过 `Scheduler（调度器)` 分析渲染任务的优先级便�
 
 useState的状态是已单向链表的形式保存在这个函数组件对应的fiber中的`memorizedState`中的。
 
+#### react 函数式是无状态的，为什么在以前版本是无状态；引入hooks，可以做到是有状态的，是怎么做到的。
+
 #### 为什么将hook使用if包裹起来会出现问题？
 
 #### 动态路由 import()
@@ -115,4 +123,11 @@ import() 兼容性问题如何解决的？
 #### 通信
 
 
+### vue
+
+#### nextTick
+
+#### vue的状态管理都可以使用哪些
+
+#### vue的依赖收集 
 
